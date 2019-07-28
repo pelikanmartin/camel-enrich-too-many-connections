@@ -37,14 +37,16 @@ To access static hostname with variable resource path, one can use this solution
 ### Multiple connections to multiple endpoints without pooling
 Camel enrich/https4 will open new connection for each unique endpoint message is sent to
 `mvn test -Dtest=TestConnectionsRemainOpen#testMultipleEndpointsWithoutConnPooling`
+
 `ps -ef |grep maven | grep -v grep | awk  '{print $2}' | netstat --tcp --numeric| grep 4447`
-### Multiple connections to single endpoint with pooling
+### Single connection to single endpoint
 `mvn test -Dtest=TestConnectionsRemainOpen#testSingleEndpointWithoutConnPooling`
-Camel enrich/https4 will open single connection to single endpoint
+
 `ps -ef |grep maven | grep -v grep | awk  '{print $2}' | netstat --tcp --numeric| grep 4447`
 ### Multiple connections to multiple endpoint with pooling
 Camel enrich/direct/https4 will open single connection to multiple endpoints
 `mvn test -Dtest=TestConnectionsRemainOpen#testMultipleEndpointsWithConnPooling`
+
 `ps -ef |grep maven | grep -v grep | awk  '{print $2}' | netstat --tcp --numeric| grep 4447`
 
 ## Results
