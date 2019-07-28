@@ -35,16 +35,20 @@ To access static hostname with variable resource path, one can use this solution
 - every test case will run and sleep for 60 seconds so we can see amount of connections
 - run mvn test in one window and netstat command in another one when all test requests are sent
 ### Multiple connections to multiple endpoints without pooling
-Camel enrich/https4 will open new connection for each unique endpoint message is sent to
+Camel enrich/simple/https4 will open new connection to each unique endpoint
+
 `mvn test -Dtest=TestConnectionsRemainOpen#testMultipleEndpointsWithoutConnPooling`
 
 `ps -ef |grep maven | grep -v grep | awk  '{print $2}' | netstat --tcp --numeric| grep 4447`
 ### Single connection to single endpoint
+Camel enrich/simple/https4 will open single connection for all messages going to the same endpoint
+
 `mvn test -Dtest=TestConnectionsRemainOpen#testSingleEndpointWithoutConnPooling`
 
 `ps -ef |grep maven | grep -v grep | awk  '{print $2}' | netstat --tcp --numeric| grep 4447`
 ### Multiple connections to multiple endpoint with pooling
-Camel enrich/direct/https4 will open single connection to multiple endpoints
+Camel enrich/constant/direct/https4 will open single connection to multiple endpoints
+
 `mvn test -Dtest=TestConnectionsRemainOpen#testMultipleEndpointsWithConnPooling`
 
 `ps -ef |grep maven | grep -v grep | awk  '{print $2}' | netstat --tcp --numeric| grep 4447`
