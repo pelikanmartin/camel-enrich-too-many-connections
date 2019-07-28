@@ -8,8 +8,11 @@ When used like:
 ```
 where targetUrl is constantly changing:
 ```
+http://localhost:4447/api/test/${id}
+...
 https4://locahost:4447/api/test/1
 https4://locahost:4447/api/test/2
+https4://localhost:4447/api/test3
 ...
 ```
 then Camel opens single connection to every unique endpoint. It seems  like entire url is taken as "HttpPath" instead of only schema:hostname:port.
@@ -34,19 +37,19 @@ To access static hostname with variable resource path, one can use this solution
 ## Run the test example
 - every test case will run and sleep for 60 seconds so we can see amount of connections
 - run mvn test in one window and netstat command in another one when all test requests are sent
-### Multiple connections to multiple endpoints without pooling
+### 1. Multiple connections to multiple endpoints without pooling
 Camel enrich/simple/https4 will open new connection to each unique endpoint
 
 `mvn test -Dtest=TestConnectionsRemainOpen#testMultipleEndpointsWithoutConnPooling`
 
 `ps -ef |grep maven | grep -v grep | awk  '{print $2}' | netstat --tcp --numeric| grep 4447`
-### Single connection to single endpoint
+### 2. Single connection to single endpoint
 Camel enrich/simple/https4 will open single connection for all messages going to the same endpoint
 
 `mvn test -Dtest=TestConnectionsRemainOpen#testSingleEndpointWithoutConnPooling`
 
 `ps -ef |grep maven | grep -v grep | awk  '{print $2}' | netstat --tcp --numeric| grep 4447`
-### Multiple connections to multiple endpoint with pooling
+### 3. Single connection to multiple endpoints with pooling
 Camel enrich/constant/direct/https4 will open single connection to multiple endpoints
 
 `mvn test -Dtest=TestConnectionsRemainOpen#testMultipleEndpointsWithConnPooling`
@@ -54,9 +57,9 @@ Camel enrich/constant/direct/https4 will open single connection to multiple endp
 `ps -ef |grep maven | grep -v grep | awk  '{print $2}' | netstat --tcp --numeric| grep 4447`
 
 ## Results
-### Multiple connections to multiple endpoints without pooling
+### 1. Multiple connections to multiple endpoints without pooling
 There is one connection to web server for each message going to unique endpoint
-### Multiple connections to single endpoint with pooling
+### 2. Single connection to single endpoint
 There is single connetion to web server for each message going to the same endpoint
-### Multiple connections to multiple endpoints with pooling
+### 3. Single connection to multiple endpoints with pooling
 There is single connection to web server for each message going to the same endpoint because of synchronous nature of the test
