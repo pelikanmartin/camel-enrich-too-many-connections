@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:http="http://cxf.apache.org/transports/http/configuration"
+    xmlns:httpj="http://cxf.apache.org/transports/http-jetty/configuration"
+    xmlns:ctx="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+    http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd
+    http://cxf.apache.org/transports/http-jetty/configuration http://cxf.apache.org/schemas/configuration/http-jetty.xsd
+    http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <sslContextParameters id="sslContextParams"
+        xmlns="http://camel.apache.org/schema/spring">
+        <keyManagers keyPassword="password">
+            <keyStore resource="KeyStore.jks" password="password" />
+        </keyManagers>
+        <trustManagers>
+            <keyStore resource="truststore.jks" password="password" />
+        </trustManagers>
+    </sslContextParameters>
+
+
+    <bean class="org.apache.camel.component.http4.HttpComponent"
+        id="https4">
+        <property name="sslContextParameters" ref="sslContextParams" />
+    </bean>
+
+    <bean id="attachmentUrlProcessor"
+        class="eu.mpelikan.camel.springboot.processor.AttachmentUrlProcessor">
+        <constructor-arg value="https://localhost:4447" />
+    </bean>
+
+    <camelContext
+        xmlns="http://camel.apache.org/schema/spring" streamCache="true"
+        trace="false" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+
+        <restConfiguration component="jetty" port="4447"
+            scheme="https" host="localhost">
+            <endpointProperty key="sslContextParameters"
+                value="#sslContextParams" />
+        </restConfiguration>
+
+        <rest path="/server">
+            <get uri="/file/{id}/{id2}">
+                <to uri="direct:response" />
+            </get>
+        </rest>
+
+        <route id="response-route">
+            <from uri="direct:response" />
+            <transform>
+                <constant>RESPONSE BODY</constant>
+            </transform>
+            <setHeader headerName="CamelHttpResponseCode">
+                <constant>200</constant>
+            </setHeader>
+            <setHeader headerName="CamelContentType">
+                <constant>text/plain</constant>
+            </setHeader>
+        </route>
+
+        <!-- route uses connection pooling -->
+        <route id="pooling-route">
+            <from uri="direct:in-pooling" />
+            <enrich>
+                <constant>direct:producer</constant>
+            </enrich>
+        </route>
+        
+        <!-- route opens hundreds of connections -->
+        <route id="no-pooling-route">
+            <from uri="direct:in-nopooling" />
+            <enrich>
+                <constant>${header.attachmentUrl}</constant>
+            </enrich>
+        </route>
+        
+        <!--  route to call local jetty webserver -->
+        <route>
+            <from uri="direct:producer" />
+
+            <to
+                uri="https4://localhost:4447
+                       ?httpClient.socketTimeout=5000
+                       &amp;httpClient.connectTimeout=5000" />
+        </route>
+    </camelContext>
+    
+
+</beans>  
