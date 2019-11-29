@@ -23,7 +23,7 @@
 
 		<camel.version>2.20.1</camel.version>
 		<cxf.version>3.2.1</cxf.version>
-		<jetty.version>9.4.6.v20170531</jetty.version>
+		<jetty.version>9.4.17.v20190418</jetty.version>
 
 	</properties>
 
